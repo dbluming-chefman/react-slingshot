@@ -1,11 +1,15 @@
 version: 2.1
 
+npm-steps: &npm-steps
+  docker:
+    - image: cimg/node:13.8.0
+  steps:
+    - checkout
+
 jobs:
   build:
-    docker:
-      - image: cimg/node:13.8.0
+    <<: *npm-steps
     steps:
-      - checkout
       - run: npm i
       - save_cache:
           key: "npm-packages"
@@ -13,45 +17,24 @@ jobs:
             - /src/node_modules
       - run: npm run lint
   test:
-    docker:
-      - image: cimg/node:13.8.0
+    <<: *npm-steps
     steps:
-      - checkout
       - restore_cache:
           keys:
             - "npm-packages"
       - run: npm i
       - run: npm run test
   analyze:
-    docker:
-      - image: cimg/node:13.8.0
+    <<: *npm-steps
     steps:
-      - checkout
       - run: npm audit
-  failed:
-    docker:
-      - image: cimg/node:13.8.0
-    steps:
-      - run:
-          name: print fail
-          command: echo Pipeline failed!
-          when: on_fail
 workflows:
   my_workflow:
     jobs:
       - build
-      - failed:
-          requires:
-            - build
       - test:
           requires:
             - build
-      - failed:
-          requires:
-            - test
       - analyze:
           requires:
             - test
-      - failed:
-          requires:
-            - analyze
