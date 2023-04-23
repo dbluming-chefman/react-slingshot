@@ -20,6 +20,7 @@ jobs:
       - restore_cache:
           keys:
             - "npm-packages"
+      - run: npm i
       - run: npm run test
   analyze:
     docker:
@@ -39,10 +40,18 @@ workflows:
   my_workflow:
     jobs:
       - build
+      - failed:
+          requires:
+            - build
       - test:
           requires:
             - build
+      - failed:
+          requires:
+            - test
       - analyze:
           requires:
             - test
-      - failed
+      - failed:
+          requires:
+            - analyze
