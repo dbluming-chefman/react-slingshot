@@ -1,15 +1,14 @@
 version: 2.1
 
-npm-steps: &npm-steps
+docker-node-image: &docker-node-image
   docker:
     - image: cimg/node:13.8.0
-  steps:
-    - checkout
 
 jobs:
   build:
-    <<: *npm-steps
+    <<: *docker-node-image
     steps:
+      - checkout
       - run: npm i
       - save_cache:
           key: "npm-packages"
@@ -17,16 +16,18 @@ jobs:
             - /src/node_modules
       - run: npm run lint
   test:
-    <<: *npm-steps
+    <<: *docker-node-image
     steps:
+      - checkout
       - restore_cache:
           keys:
             - "npm-packages"
       - run: npm i
       - run: npm run test
   analyze:
-    <<: *npm-steps
+    <<: *docker-node-image
     steps:
+      - checkout
       - run: npm audit
 workflows:
   my_workflow:
